@@ -1,4 +1,4 @@
-package com.sevilladeux.StockMarketMonitor.rest;
+package com.sevilladeux.StockMarketMonitor.rest.models;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 
@@ -10,6 +10,16 @@ public class MetaData {
     private String outputSize;
     private String timeZone;
 
+    public MetaData(){}
+
+    public MetaData(String information, String symbol, String lastRefreshed, String interval, String outputSize, String timeZone) {
+        this.information = information;
+        this.symbol = symbol;
+        this.lastRefreshed = lastRefreshed;
+        this.interval = interval;
+        this.outputSize = outputSize;
+        this.timeZone = timeZone;
+    }
 
     public String getInformation() {
         return information;

@@ -1,4 +1,4 @@
-package com.sevilladeux.StockMarketMonitor.rest;
+package com.sevilladeux.StockMarketMonitor.rest.models;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 

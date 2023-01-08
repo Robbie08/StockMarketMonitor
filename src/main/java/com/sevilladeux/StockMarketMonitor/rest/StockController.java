@@ -1,5 +1,7 @@
 package com.sevilladeux.StockMarketMonitor.rest;
 
+import com.sevilladeux.StockMarketMonitor.rest.models.Stock;
+import com.sevilladeux.StockMarketMonitor.rest.models.StockRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;

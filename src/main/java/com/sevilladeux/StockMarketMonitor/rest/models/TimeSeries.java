@@ -1,6 +1,7 @@
-package com.sevilladeux.StockMarketMonitor.rest;
+package com.sevilladeux.StockMarketMonitor.rest.models;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.sevilladeux.StockMarketMonitor.rest.models.PriceData;
 
 import java.util.*;
 

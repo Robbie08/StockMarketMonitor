@@ -2,6 +2,8 @@ package com.sevilladeux.StockMarketMonitor.rest;
 
 import com.fasterxml.jackson.databind.*;
 import com.sevilladeux.StockMarketMonitor.common.Constants;
+import com.sevilladeux.StockMarketMonitor.rest.models.Stock;
+import com.sevilladeux.StockMarketMonitor.rest.models.StockRequest;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -17,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class StockService {
 
-    ConcurrentHashMap<String, Stock> stockCache = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<String, Stock> stockCache = new ConcurrentHashMap<>();
 
     public List<String> fetchStockSymbolsInMemory() {
         List<String> listOfSymbols = new ArrayList<>();
@@ -31,6 +33,20 @@ public class StockService {
     {
         System.out.printf("===== Getting Stock Time Series Data for '%s' =====\n", stockRequest.getSymbol());
 
+        if(stockCache.containsKey(stockRequest.getSymbol())){
+          // only return stock if it has not expired
+            long expirationTime = stockCache.get(stockRequest.getSymbol()).getExpiration();
+            if (System.currentTimeMillis() <= expirationTime){
+                System.out.printf("Found '%s' in cache\n", stockRequest.getSymbol());
+                System.out.printf("===== Retrieved Stock Time Series Data for '%s' =====\n", stockRequest.getSymbol());
+                return stockCache.get(stockRequest.getSymbol());
+            }
+            else{
+                // evict it from the cache and move on
+                stockCache.remove(stockRequest.getSymbol());
+                System.out.printf("Evicted '%s' from the cache\n", stockRequest.getSymbol());
+            }
+        }
         HttpResponse<String> response = requestGetStockTimeSeries(stockRequest);
 
         // Now I have to map the item into memory
@@ -39,12 +55,9 @@ public class StockService {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try{
             stock = objectMapper.readValue(response.body(), Stock.class);
-
-            if(!stockCache.containsKey(stockRequest.getSymbol())) {
-                stockCache.put(stockRequest.getSymbol(), stock);
-                System.out.println("Added a stock to the stockCache...");
-                System.out.println("stockCache.size(): " + stockCache.size());
-            }
+            stock.setExpiration(Constants.generateExpirationTimeInMillis());
+            stockCache.put(stockRequest.getSymbol(), stock);
+            System.out.printf("Added a '%s' to the stockCache...\n", stockRequest.getSymbol());
             System.out.printf("===== Retrieved Stock Time Series Data for '%s' =====\n", stockRequest.getSymbol());
         } catch(Exception e){
             System.out.printf("Failed to store response body in memory: %s", e);
@@ -75,5 +88,20 @@ public class StockService {
         return response;
     }
 
+
+    public void pruneExpiredStocks(){
+        int prunedExpiredStocksCount = 0;
+
+        for (Map.Entry<String, Stock> stock : stockCache.entrySet())
+        {
+            long expiredTime = stock.getValue().getExpiration();
+            if (System.currentTimeMillis() > expiredTime){
+                stockCache.remove(stock.getValue().getMetaData().getSymbol());
+                prunedExpiredStocksCount++;
+            }
+        }
+
+        System.out.printf("pruneExpiredStocks pruned '%d' stocks from stockCache\n", prunedExpiredStocksCount);
+    }
 
 }
