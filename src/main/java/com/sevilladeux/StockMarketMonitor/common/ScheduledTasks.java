@@ -22,9 +22,9 @@ public class ScheduledTasks {
     /**
      * This periodic function executes every hour
      */
-    @Scheduled(cron="* */15 * * * *")
+    @Scheduled(cron="0 0 0/1 1/1 * ?")
     public void hourlyPeriodicJob(){
-        System.out.println("Running hourly periodic Job - " + dateFormat.format(new Date()));
+        System.out.println("Running periodic Job - " + dateFormat.format(new Date()));
         System.out.println("Executing stockService.pruneExpiredStocks()...");
         stockService.pruneExpiredStocks();
     }
